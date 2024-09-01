@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Welcome to my Tic Tac Toe game. It's a straightforward, no-fuss way to pass the time and have a little fun. Whether you're up for a quick match with a friend or want to test your wits against the AI, this game's got you covered.">
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="./src/responsive.css">
+    <title>Tic Tac Toe</title>
+</head>
+<body class="active-x creation-phase">
+    <div class="container">
+        <header class="header">
+            <h1 class="header__heading"><span>Tic</span> <span>Tac</span> <span>Toe</span></h1>
+        </header>
+        <article class="article">
+            <form action="#" class="creation">
+                <div class="creation__row creation__row--player-names">
+                    <ul class="creation__list">
+                        <li class="creation__list-item creation__list-item--x">
+                            <input type="text" name="player-x-name" id="player-x-name" class="creation__player-input" placeholder="Enter X's name" minlength="2" maxlength="9" required>
+                        </li>
+                        <li class="creation__list-item creation__list-item--o">
+                            <input type="text" name="player-o-name" id="player-o-name"  class="creation__player-input creation__player-input--o" minlength="2" maxlength="9" placeholder="Enter O's name" required>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <button type="submit" class="creation__start-button">Start Game</button>
+                </div>
+            </form>
+        </article>
+        <main class="main">
+            <section class="gameboard">
+                <div class="gameboard__grid">
+                </div>
+            </section>
+            <section class="active-player">
+                <div class="active-player__box-cont">
+                    <span class="active-player__box active-player__box--x"></span>
+                    <span class="active-player__box active-player__box--o"></span>
+                </div>
+            </section>
+            <button type="button" class="game-quit-button">Quit Game</button>
+        </main>
+        <footer class="footer">
+            <p>&copy; 2024</p>
+            <a href="https://github.com/EmrahIso" class="footer__github-link" target="_blank" rel="noopener noreferrer">
+                <p>Emrah Isovic</p>
+                <svg xmlns="http://www.w3.org/2000/svg" class="footer__github-link-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            </a>
+        </footer>
+    </div>
+    <dialog data-modal class="dialog dialog--game-finished">
+        <div>
+            <p class="dialog__subheading">The result:</p>
+            <button type="button" class="dialog__close-button"></button>
+        </div>
+        <div>
+            <h2 class="dialog__heading">
+                <svg xmlns="http://www.w3.org/2000/svg" class="dialog__heading-icon dialog__heading-icon--x" viewBox="0 0 24 24" fill="currentColor"><path d="M2.00488 19H22.0049V21H2.00488V19ZM2.00488 5L7.00488 8.5L12.0049 2L17.0049 8.5L22.0049 5V17H2.00488V5ZM4.00488 8.84131V15H20.0049V8.84131L16.5854 11.2349L12.0049 5.28024L7.42435 11.2349L4.00488 8.84131Z"></path></svg>
+                <span>Player One</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="dialog__heading-icon dialog__heading-icon--o" viewBox="0 0 24 24" fill="currentColor"><path d="M2.00488 19H22.0049V21H2.00488V19ZM2.00488 5L7.00488 8.5L12.0049 2L17.0049 8.5L22.0049 5V17H2.00488V5ZM4.00488 8.84131V15H20.0049V8.84131L16.5854 11.2349L12.0049 5.28024L7.42435 11.2349L4.00488 8.84131Z"></path></svg>
+            </h2>
+        </div>
+        <div class="dialog__buttons-cont">
+            <button type="button" class="dialog__button dialog__button--new-game">New Game</button>
+            <button type="button" autofocus class="dialog__button dialog__button--quit-game">Quit Game</button>
+        </div>
+    </dialog>
+    <script src="./src/script.js"></script>
+</body>
+</html>
