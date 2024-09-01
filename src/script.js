@@ -70,42 +70,26 @@ const Cell = function(cellIndex) {
 
 // GameFlowControl object will control the game
 
-const GameFlowControl = function() {
+const GameFlowControl = function(playerXName = "Player One", playerOName = "Player Two") {
 
     const board = Gameboard();
 
-    // Ask for player names
-
-    const askForPlayerName = (playerID) => { // playerID is the name for the sequence number of the player 
-        let playerName = prompt(`Enter ${playerID} Player Name: `, `${playerID} Player`);
-        
-        if(playerName === null) playerName = `${playerID} Player`;
-
-        // we use this string to discard all "empty characters" when checking the length of player names
-        let playerNameCharacterArray = playerName.split('').filter(char => char != " ");
-        
-        while(playerNameCharacterArray.length < 5 || playerNameCharacterArray.length > 20) {
-            alert("The player's name must be five or more and less than twenty letters.");
-            playerName = prompt(`Enter ${playerID} Player Name: `, `${playerID} Player`); 
-            playerNameCharacterArray = playerName.split('').filter(char => char != " ");
-        }
-
-        return playerName;
-
-    }
-
     const players = [
         {
-            name: askForPlayerName("First"),
+            name: playerXName,
             token: "x"
         },
         {
-            name: askForPlayerName("Second"),
+            name: playerOName,
             token: "o"
         }
     ];
 
     let gameWinner = null; // Game winner is always null except if the game is finished. In that situation it is players[0].name or players[1].name or "Tie"
+
+    const getGameWinner = () => {
+        return gameWinner;
+    }
 
     let activePlayer = players[0];
 
@@ -117,33 +101,11 @@ const GameFlowControl = function() {
         return activePlayer;
     }
 
-    console.log("Start");
-    console.log('------------');
-    console.log(`First player: "${players[0].name}", Token: "${players[0].token}"`);
-    console.log('------------');
-    console.log(`Second player: "${players[1].name}", Token: "${players[1].token}"`);
-    console.log('------------');
-    console.log(`${getActivePlayer().name}'s turn`);
-    console.log('------------');
-    console.log('------------');
-    console.log('------------');
-
-    const printNewRound = () => {
-        console.log('------------');
-        console.log('New round');
-        console.log('------------');
-        console.log(`${getActivePlayer().name}'s turn`);
-        console.log('------------');
-    }
-
     const checkWinCondition = (board) => {
-        console.log('checking winner');
-        console.log('------------');
 
         const announceWinner = (winner) => {
             if(gameWinner != null) return;
             gameWinner = winner.name;
-            console.log(`${gameWinner} is winner`);
         };
 
         // We use these two array variables to store tokens in array to help our condition checking functions
@@ -314,13 +276,8 @@ const GameFlowControl = function() {
         diagonalCheck();
 
         if(gameWinner != null) { 
-            console.log('-----------');
-            console.log("The end of the game");    
             return true;
         };
-        
-        console.log("the end of the condition variable");
-        console.log('------------');
     }
 
     const checkTieCondition = () => {
@@ -335,9 +292,6 @@ const GameFlowControl = function() {
 
         if(boardFilled) {
             gameWinner = "Tie";
-            console.log(gameWinner);  
-            console.log('-----------');
-            console.log("The end of the game");  
             return true;
         } 
     }
@@ -353,19 +307,6 @@ const GameFlowControl = function() {
 
         // Reset active player
         activePlayer = players[0];
-
-        // Message
-
-        console.log('------------');
-        console.log("Starting new game");
-        console.log('------------');
-        console.log(`First player: "${players[0].name}", Token: "${players[0].token}"`);
-        console.log('------------');
-        console.log(`Second player: "${players[1].name}", Token: "${players[1].token}"`);
-        console.log('------------');
-        console.log(`${getActivePlayer().name}'s turn`);
-        console.log('------------');
-
     }
 
     const playRound = (cellIndex) => {
@@ -395,10 +336,6 @@ const GameFlowControl = function() {
         // Checking if the target cell is available
         const isCellAvailable = board.getBoard()[boardTargetRowIndex][boardTargetCellIndex].getAvailable();
         if(!isCellAvailable) return;
-        
-        console.log('------------');
-        console.log(`Dropping ${getActivePlayer().name}'s token (${getActivePlayer().token}) into ${cellIndex} cell.`);
-        console.log('------------');
 
         // Dropping token
         board.dropToken(getActivePlayer(), boardTargetRowIndex, boardTargetCellIndex);
@@ -409,10 +346,227 @@ const GameFlowControl = function() {
         if(checkTieCondition(board)) return;
 
         switchActivePlayer();
-        printNewRound();
     }
 
-    return { getActivePlayer, playRound, resetGame};
+    return { getActivePlayer, playRound, resetGame, getBoard: board.getBoard, getGameWinner};
 };
 
-const game = GameFlowControl();
+const screenFlowControl = function() {
+    const gameStartFormEl = document.querySelector(".creation");
+
+    const gameStartFormSubmitEventHandler = (e) => {
+        e.preventDefault();
+
+        // Player Names and JS validation
+        const playerXName = document.querySelector("#player-x-name").value;
+        const playerOName = document.querySelector("#player-o-name").value;
+        
+        if(playerXName.split('').length > 9 ||
+        playerXName.split('').length < 2 ||
+        playerOName.split('').length > 9 ||
+        playerOName.split('').length < 2) return; 
+        
+        // Closing creation-phase and showing main part of the webpage
+
+        document.querySelector("body").classList.remove("creation-phase");
+
+        screenBoardControl(playerXName, playerOName);
+    }
+
+    gameStartFormEl.addEventListener("submit", gameStartFormSubmitEventHandler);
+
+    let isGameFinished = false;
+
+    const screenBoardControl = (playerXName, playerOName) => {
+        const game = GameFlowControl(playerXName, playerOName);
+        const boardEl = document.querySelector(".gameboard__grid");
+
+        const updateScreen = () => {
+            if(isGameFinished) return;
+    
+            boardEl.innerHTML = "";
+    
+            const board = game.getBoard();
+            const activePlayerToken = game.getActivePlayer().token;
+    
+            const quitGameButtonEl = document.querySelector(".game-quit-button");
+    
+            // result dialog
+            const resultDialogEl = document.querySelector(".dialog--game-finished");
+    
+            // dialog control function
+    
+            const controlDialog = () => {
+    
+                // Show Result
+    
+                const dialogResultBoxEl = document.querySelector(".dialog__heading");
+                const dialogResultEl = document.querySelector(".dialog__heading span");
+    
+                dialogResultEl.textContent = game.getGameWinner();
+    
+                const dialogCloseEl =  document.querySelector(".dialog__close-button");
+                const dialogQuitGameEl = document.querySelector(".dialog__button--quit-game");
+                const dialogNewGameEl = document.querySelector(".dialog__button--new-game");
+
+                // Display winner
+
+                const winnerName = game.getGameWinner();
+
+                const dialogResultBoxXIconEl = dialogResultBoxEl.querySelector(".dialog__heading-icon--x");
+                const dialogResultBoxOIconEl = dialogResultBoxEl.querySelector(".dialog__heading-icon--o");
+
+                if(playerXName == winnerName) {
+                    dialogResultBoxEl.style.color = "var(--clr-primary-400)";
+
+                    // X icon visible
+                    dialogResultBoxXIconEl.style.visibility = "visible";
+                    dialogResultBoxXIconEl.style.opacity = 1;
+
+                    // O icon hidden
+
+                    dialogResultBoxOIconEl.style.visibility = "hidden";
+                    dialogResultBoxOIconEl.style.opacity = 0;
+
+                } else if(playerOName == winnerName) {
+                    dialogResultBoxEl.style.color = "var(--clr-secondary-400)";
+
+                    // X icon hidden
+                    dialogResultBoxXIconEl.style.visibility = "hidden";
+                    dialogResultBoxXIconEl.style.opacity = 0;
+
+                    // O icon visible
+
+                    dialogResultBoxOIconEl.style.visibility = "visible";
+                    dialogResultBoxOIconEl.style.opacity = 1;
+                } else if ("Tie" == winnerName) {
+                    dialogResultBoxEl.style.color = "var(--clr-tertiary-400)";
+
+                    // X icon visible
+                    dialogResultBoxXIconEl.style.visibility = "visible";
+                    dialogResultBoxXIconEl.style.opacity = 1;
+
+                    // O icon visible
+
+                    dialogResultBoxOIconEl.style.visibility = "visible";
+                    dialogResultBoxOIconEl.style.opacity = 1;
+                }
+    
+                const dialogCloseClickEventHandler = (e) => {
+                    // Make the quit game button visible
+                    quitGameButtonEl.style.visibility = "visible";
+                    quitGameButtonEl.style.pointerEvents = "all";
+                    quitGameButtonEl.style.opacity = 1;
+    
+                    // Close the dialog
+                    resultDialogEl.close();
+                }
+    
+                const dialogQuitGameClickEventHandler = (e) => {
+                    location.reload();
+                }
+    
+                const dialogNewGameClickEventHandler = (e) => {
+                    // Close dialog
+                    resultDialogEl.close();
+    
+                    // Reset game board
+                    game.resetGame();
+    
+                    // Update isGameFinished variable
+                    isGameFinished = false;
+    
+                    // Run updateScreen Function to render new gameboard
+                    updateScreen();
+                }
+    
+                dialogCloseEl.addEventListener("click", dialogCloseClickEventHandler);
+                dialogQuitGameEl.addEventListener("click", dialogQuitGameClickEventHandler);
+                dialogNewGameEl.addEventListener("click", dialogNewGameClickEventHandler);
+            }
+    
+            // Quit Game 
+    
+            const quitGameButtonClickEventHandler = (e) => {
+                location.reload();
+            }
+    
+            quitGameButtonEl.addEventListener("click", quitGameButtonClickEventHandler);
+    
+            // Checking if the game is over to stop dialog from popping up when the gam is finished
+            if(game.getGameWinner() != null) { 
+                isGameFinished = true;
+    
+                resultDialogEl.showModal();
+                controlDialog();
+            }
+    
+            // Display Active player by class attribute on body El 
+            switch(activePlayerToken) {
+                case "x":
+                    document.querySelector("body").classList.remove(`active-o`);
+                    document.querySelector("body").classList.add(`active-x`);
+                break;
+                case "o":
+                    document.querySelector("body").classList.remove(`active-x`);
+                    document.querySelector("body").classList.add(`active-o`);
+                break;
+            }
+    
+            // Render all Board Cells
+    
+            board.forEach((row, rowIndex) => {
+                row.forEach((cell, cellIndex) => {
+                    // Create cell button element 
+                    const cellEl = document.createElement("button");
+    
+                    // Added classes, type and data attributes
+                    cellEl.setAttribute("type", "button");
+                    cellEl.dataset.cell = `${rowIndex + 1}.${cellIndex + 1}`;
+                    cellEl.dataset.token = cell.getToken();
+                    cellEl.classList.add("gameboard__cell");
+                    cellEl.classList.add(`gameboard__cell--${rowIndex + 1}-${cellIndex + 1}`);
+    
+                    // Check if cell is available and add another data attribute for that
+                    
+                    cellEl.dataset.cellIsAvailable = cell.getAvailable();
+    
+                    // Append element into BoardEl 
+    
+                    boardEl.appendChild(cellEl);
+                })
+            })
+        }
+    
+                    
+        const boardClickEventHandler = (e) => {
+            // Checking if the click was on the gameboard__cell
+    
+            const eventTargetEl = e.target;
+            if(eventTargetEl.classList[0] != "gameboard__cell") return;
+            //if(!Boolean(eventTargetEl.getAttribute("data-cell-is-available"))) return;
+    
+            const targetCellIndex = eventTargetEl.getAttribute("data-cell");
+    
+            game.playRound(targetCellIndex);
+            updateScreen();
+        }
+    
+        boardEl.addEventListener("click", boardClickEventHandler);
+    
+        updateScreen();
+    }
+
+    const pageContentLoadEventHandler = (e) => {
+        const animateElements = document.querySelectorAll(".container > *");
+
+        animateElements.forEach(animateEl => {
+            animateEl.style.opacity = 1;
+            animateEl.style.filter = "blur(0)";
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", pageContentLoadEventHandler);
+}
+
+screenFlowControl();
